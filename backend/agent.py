@@ -1,16 +1,22 @@
-# In imports ko agent.py ke top par replace kar do
+# backend/agent.py
 import os
 from google import genai
 from google.genai import types  # types ko is tarah import karna ha
 from dotenv import load_dotenv
 from database import SessionLocal, Room, Booking
 from datetime import datetime
+
 load_dotenv()
+
+# --- DEBUGGING API KEY LOADING ---
+print("--- DEBUGGING API KEY LOADING ---")
+print("Loaded Key:", os.getenv("GEMINI_API_KEY"))
+print("---------------------------------")
 
 # Gemini Client Initialize karna
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# --AGENT TOOLS (Python functions jo AI use karega) ---
+# --- AGENT TOOLS (Python functions jo AI use karega) ---
 
 def check_room_availability(room_number: int) -> str:
     """Checks the current availability and details of a specific room number."""
@@ -74,9 +80,9 @@ tools_map = {
 # --- THE AGENT EXECUTION LOGIC ---
 
 def run_hotel_agent(user_prompt: str) -> str:
-    # 2026 Recommended model for low-latency speed & structured tool calling
+    # 2026 Recommended model for ultra-low latency & smart tool calling
     model_id = "gemini-2.5-flash"
-    # agent.py ke andar run_hotel_agent function ke andar ye replace karo:
+    
     config = types.GenerateContentConfig(
         tools=[check_room_availability, create_draft_booking],
         temperature=0.0,
@@ -87,7 +93,7 @@ def run_hotel_agent(user_prompt: str) -> str:
             "Today's date reference is June 2026."
         )
     )
-    
+
     # Gemini ko prompt bhejna
     response = client.models.generate_content(
         model=model_id,
@@ -105,7 +111,7 @@ def run_hotel_agent(user_prompt: str) -> str:
             if name in tools_map:
                 tool_result = tools_map[name](**args)
                 return {
-                    "agent_response": response.text if response.text else f"Executing action: {name}",
+                    "agent_response": f"Successfully executed action: {name}",
                     "action_taken": name,
                     "result": tool_result
                 }
